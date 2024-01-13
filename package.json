@@ -9,6 +9,7 @@
   ],
   "author": "Daniele Favi <info@danielefavi.com> (http://www.danielefavi.com)",
   "main": "index.js",
+  "repository": "git://github.com/danielefavi/npm-log-explorer.git",
   "scripts": {
     "test": "echo \"No test specified\"",
     "prepublish": "tsc",
