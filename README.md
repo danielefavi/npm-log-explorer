@@ -7,6 +7,11 @@ Log Explorer: a simple tool to explore and visualize your logs
 
 It is a simple tool that can be used to quickly analyze your logs and find the information you need.
 
+<!-- <p align="center"><img src="https://raw.githubusercontent.com/danielefavi/npm-log-explorer/master/.github/images/exported-ui-sample.png" width="60%" height="70%" /></p> -->
+
+NPM: https://www.npmjs.com/package/npm-log-explorer  
+GitHub: https://github.com/danielefavi/npm-log-explorer
+
 ## How to use it?
 
 ### Installation
@@ -40,3 +45,8 @@ You can get help on the command line by running:
 ```bash
 log-explorer --help
 ```
+
+## Is your log format not supported?
+
+If your log format is not supported, you can easily add it by creating a new parser in the `log-parser-strategies` directory.  
+Then please submit a pull request so that we can add it to the package.

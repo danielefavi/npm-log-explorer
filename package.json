@@ -5,7 +5,9 @@
   "license": "MIT",
   "keywords": [
     "log",
-    "tool"
+    "tool",
+    "typescript",
+    "explorer"
   ],
   "author": "Daniele Favi <info@danielefavi.com> (http://www.danielefavi.com)",
   "main": "index.js",
