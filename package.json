@@ -1,6 +1,6 @@
 {
   "name": "npm-log-explorer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Log Explorer: a simple tool to explore and visualize your logs",
   "license": "MIT",
   "keywords": [
