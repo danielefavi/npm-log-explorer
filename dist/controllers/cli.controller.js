@@ -33,9 +33,10 @@ class CliController {
         console.log('Options:');
         console.log('  -v, --version  output the version number');
         console.log('  -h, --help     output usage information');
-        console.log('  -p, --port     specify the port number');
+        console.log('  -p, --port     specify the port number - default 4321');
         console.log('Example:');
-        console.log('log-explorer --port 4321     # start the server on port 4321');
+        console.log('log-explorer --port 8877     # start the server on port 8877');
+        console.log('');
         this.process.exit(1);
     }
 }
