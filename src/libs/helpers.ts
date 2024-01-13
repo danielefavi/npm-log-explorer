@@ -17,3 +17,20 @@ export function validateServerPort(port: any): number {
 
   return port;
 }
+
+export function getPort(): number {
+  let port = 4321;
+  let inx = null;
+
+  if (process.argv.includes('--port')) {
+    inx = process.argv.indexOf('--port') + 1;
+  } else if (process.argv.includes('-p')) {
+    inx = process.argv.indexOf('-p') + 1;
+  }
+
+  if (inx !== null) {
+    port = validateServerPort(process.argv[inx]);
+  }
+  
+  return port;
+}

@@ -89,40 +89,42 @@
         let searchCurrentPage = 1;
         let itemsPerPage = 100;
 
-        window.addEventListener('load', () => {
+        window.addEventListener('load', async function() {
             const sidebarHeading = document.querySelector('#sidebar-heading');
             sidebarHeading.innerHTML = '<span>Loading...</span>';
+            showLoading(true);
 
-            fetch('/api/logs')
-                .then(response => response.json())
-                .then(data => {
-                    if (
-                        !data ||
-                        data && typeof data === 'string' && data.trim() === 'null' || 
-                        data && data.length === 0
-                    ) {
-                        sidebarHeading.innerHTML = '<span>No log file found</span>';
-                        return;
-                    }
-                    
-                    sidebarHeading.innerHTML = '<span>Log Files</span>';
-                    const sidebar = document.querySelector('#sidebarMenu .sidebar-sticky ul');
-                    data.forEach(file => {
-                        const li = document.createElement('li');
-                        li.classList.add('nav-item');
-                        li.innerHTML = `<a class="nav-link text-white" data-file="${file}" href="#">${file}</a>`;
-                        sidebar.appendChild(li); 
-                    });
+            let response = null;
+            try {
+                response = await fetch('/api/logs');
+                const data = await response.json();
 
-                    const firstFile = document.querySelector('#sidebarMenu .sidebar-sticky a');
-                    if (firstFile) {
-                        selectFileAction(firstFile);
-                    }
-                })
-                .catch(error => {
-                    sidebarHeading.innerHTML = '<span>Error occurred</span>';
-                    console.log('Error occurred', error);
+                if (response.status !== 200) {
+                    throw new Error(data.error || data.message || 'Error occurred');
+                }
+                
+                if (data && data.length === 0) {
+                    sidebarHeading.innerHTML = '<span>No log file found</span>';
+                    return;
+                }
+                
+                sidebarHeading.innerHTML = '<span>Log Files</span>';
+                const sidebar = document.querySelector('#sidebarMenu .sidebar-sticky ul');
+                data.forEach(file => {
+                    const li = document.createElement('li');
+                    li.classList.add('nav-item');
+                    li.innerHTML = `<a class="nav-link text-white" data-file="${file}" href="#">${file}</a>`;
+                    sidebar.appendChild(li); 
                 });
+
+                const firstFile = document.querySelector('#sidebarMenu .sidebar-sticky a');
+                if (firstFile) {
+                    selectFileAction(firstFile);
+                }
+            } catch(error) {
+                sidebarHeading.innerHTML = '<span>Error occurred</span>';
+                handleError('Error occurred loading the list of files', error, document.querySelector('#main-content'), response);
+            }
         });
 
         window.addEventListener('scroll', () => {
@@ -138,7 +140,7 @@
         const searchInput = document.querySelector('#search-input');
 
         // Add an event listener for the input event
-        searchInput.addEventListener('keydown', function(e) {
+        searchInput.addEventListener('keydown', async function(e) {
             if (e.key !== 'Enter') return;
             // disable the field
             e.target.disabled = true;
@@ -157,54 +159,60 @@
             const mainContent = document.querySelector('#main-content');
             mainContent.innerHTML = '';
 
-            fetch(`/api/logs/search?query=${encodedSearchValue}&page=${searchCurrentPage}&items_per_page=${itemsPerPage}`)
-                .then(response => response.json())
-                .then(data => {
-                    showLoading(false);
-                    e.target.disabled = false;
+            let response = null;
+            try {
+                response = await fetch(`/api/logs/search?query=${encodedSearchValue}&page=${searchCurrentPage}&items_per_page=${itemsPerPage}`);
+                const data = await response.json();
 
-                    if (!data || data && data.length === 0) {
-                        mainContent.innerHTML = `<h3>No results found</h3>`;
-                        return;
-                    }
+                if (response.status !== 200) {
+                    throw new Error(data.error || data.message || 'Error occurred');
+                }
 
-                    data.forEach(item => {
-                        const itemElement = getSingleLogElement(flattenObject(item));
-                        mainContent.appendChild(itemElement);
-                    });
-                })
-                .catch(error => {
-                    handleError(error, mainContent)
-                    e.target.disabled = false;
+                showLoading(false);
+                e.target.disabled = false;
+
+                if (!data || data && data.length === 0) {
+                    mainContent.innerHTML = `<h3>No results found</h3>`;
+                    return;
+                }
+
+                data.forEach(item => {
+                    const itemElement = getSingleLogElement(flattenObject(item));
+                    mainContent.appendChild(itemElement);
                 });
+            } catch (error) {
+                handleError('Error occurred on searching', error, mainContent, response);
+                e.target.disabled = false;
+            }
         });
 
-        function fetchNextPage(page, file, mainContent) {
+        async function fetchNextPage(page, file, mainContent) {
             showLoading(true);
-            fetch(`/api/logs/view?file=${file}&page=${page}&items_per_page=${itemsPerPage}`)
-                .then(response => response.text())
-                .then(data => {
-                    let json = null;
-                    try {
-                        json = JSON.parse(data);
-                    } catch (e) {
-                        console.log('Error JSON parsing the data', e);
-                    }
-                
-                    if (json && json.length) {
-                        json.forEach(log => {
-                            const logElement = getSingleLogElement(flattenObject(log));
-                            mainContent.appendChild(logElement);
-                        });
-                    } else if (data.trim() === 'null' || json && json.length === 0) {
-                        mainContent.innerHTML += `<h3>End of file</h3>`;
-                    } else {
-                        mainContent.innerHTML += `<h3>Error occurred</h3>`;
-                        mainContent.innerHTML += `<pre>${data}</pre>`;
-                    }
-                    showLoading(false);
-                })
-                .catch(error => handleError(error, mainContent));
+
+            let response = null;
+            try {
+                response = await fetch(`/api/logs/view?file=${file}&page=${page}&items_per_page=${itemsPerPage}`);
+                const json = await response.json();
+
+                if (response.status !== 200) {
+                    throw new Error(data.error || data.message || 'Error occurred');
+                }
+
+                if (json && json.length) {
+                    json.forEach(log => {
+                        const logElement = getSingleLogElement(flattenObject(log));
+                        mainContent.appendChild(logElement);
+                    });
+                } else if (json && json.length === 0) {
+                    mainContent.innerHTML += `<h3>End of file</h3>`;
+                } else {
+                    mainContent.innerHTML += `<h3>Error occurred</h3>`;
+                    mainContent.innerHTML += `<pre>${response}</pre>`;
+                }
+                showLoading(false);
+            } catch (error) {
+                handleError('Error occurred loading the logs', error, mainContent, response);
+            }
         }
 
         document.querySelector('#sidebarMenu .sidebar-sticky').addEventListener('click', (e) => {
@@ -323,10 +331,27 @@
             }
         }
 
-        function handleError(error, contentElem) {
+        function handleError(mainMessage, error, contentElem, response = null) {
             console.log('Error occurred', error);
-            contentElem.innerHTML = `<h3>Error occurred</h3>`;
+            contentElem.innerHTML = `<h3>${mainMessage}</h3>`;
             contentElem.innerHTML += `<pre>${error}</pre>`;
+
+            console.log('Response', response);
+            if (response) {
+                const respPre = JSON.stringify({
+                    url: response.url,
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: response.headers,
+                    body: response.body,
+                }, null, 2);
+
+                contentElem.innerHTML += `
+                    <h3>Response</h3>
+                    <pre>${respPre}</pre>
+                `;
+            }
+
             showLoading(false);
         }
     </script>

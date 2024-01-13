@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateServerPort = void 0;
+exports.getPort = exports.validateServerPort = void 0;
 function validateServerPort(port) {
     if (typeof port === 'undefined') {
         console.error('Error: --port requires a port number');
@@ -18,3 +18,18 @@ function validateServerPort(port) {
     return port;
 }
 exports.validateServerPort = validateServerPort;
+function getPort() {
+    let port = 4321;
+    let inx = null;
+    if (process.argv.includes('--port')) {
+        inx = process.argv.indexOf('--port') + 1;
+    }
+    else if (process.argv.includes('-p')) {
+        inx = process.argv.indexOf('-p') + 1;
+    }
+    if (inx !== null) {
+        port = validateServerPort(process.argv[inx]);
+    }
+    return port;
+}
+exports.getPort = getPort;

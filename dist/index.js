@@ -8,21 +8,28 @@ const express_1 = __importDefault(require("express"));
 const child_process_1 = __importDefault(require("child_process"));
 const helpers_1 = require("./libs/helpers");
 const api_1 = __importDefault(require("./routes/api"));
+const cli_controller_1 = __importDefault(require("./controllers/cli.controller"));
+cli_controller_1.default.exec(process);
 const app = (0, express_1.default)();
 app.use('/api', api_1.default);
 app.get('/', (req, res) => {
-    // return the views/index.html
     res.sendFile('index.html', { root: __dirname + '/../views' });
 });
-let port = 4321;
-if (process.argv.includes('--port')) {
-    const inx = process.argv.indexOf('--port') + 1;
-    port = (0, helpers_1.validateServerPort)(process.argv[inx]);
-}
-app.listen(port, () => {
+const port = (0, helpers_1.getPort)();
+app
+    .listen(port, () => {
     const url = `http://localhost:${port}`;
     console.log(`Server started at ` + url);
     // opening the browser
     var start = (process.platform == 'darwin' ? 'open' : process.platform == 'win32' ? 'start' : 'xdg-open');
     child_process_1.default.exec(start + ' ' + url);
+})
+    .on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+        console.log(`Port ${port} is busy, please try another port using --port option`);
+    }
+    else {
+        console.log(err);
+    }
+    process.exit(1);
 });
