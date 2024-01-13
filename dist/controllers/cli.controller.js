@@ -10,7 +10,6 @@ class CliController {
     }
     cliExec() {
         const args = this.process.argv.slice(2);
-        console.log(args);
         switch (args[0]) {
             case '-v':
             case '--version':
@@ -28,11 +27,15 @@ class CliController {
         this.process.exit(1);
     }
     help() {
+        console.log('');
+        console.log('Log Explorer: a simple tool to explore your logs through a web interface.');
         console.log('Usage: log-explorer [options] [command]');
         console.log('Options:');
         console.log('  -v, --version  output the version number');
         console.log('  -h, --help     output usage information');
         console.log('  -p, --port     specify the port number');
+        console.log('Example:');
+        console.log('log-explorer --port 4321     # start the server on port 4321');
         this.process.exit(1);
     }
 }
