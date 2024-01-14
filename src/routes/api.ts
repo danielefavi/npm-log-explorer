@@ -16,7 +16,7 @@ router.get('/logs/search', (req: Request, res: Response) => LogController.search
 router.use('*', (req: Request, res: Response) => res.status(404).json({ message: 'Not Found' }));
 
 // Error handling middleware
-router.use((err: any, req: Request, res: Response, next: NextFunction) => {
+router.use((err: Error & { stack?: string, message?: string }, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack); // Log error stack trace to the console
   res.status(500).json({ message: 'An error occurred', error: err.message });
 });

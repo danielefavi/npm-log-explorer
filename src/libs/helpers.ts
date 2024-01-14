@@ -1,21 +1,18 @@
 
-export function validateServerPort(port: any): number {
+export function validateServerPort(port: string|undefined): number {
   if (typeof port === 'undefined') {
-    console.error('Error: --port requires a port number');
-    process.exit(1);
+    throw new Error('Error: --port requires a port number');
   }
 
-  port = parseInt(port);
+  const portNum = parseInt(port);
 
-  if (isNaN(port)) {
-    console.error('Error: --port is not a valid number');
-    process.exit(1);
-  } else if (port < 0 || port > 65535) {
-    console.error('Error: --port is not a valid port number: the port should be port > 0 and port < 65535');
-    process.exit(1);
+  if (isNaN(portNum)) {
+    throw new Error('Error: --port is not a valid number');
+  } else if (portNum < 0 || portNum > 65535) {
+    throw new Error('Error: --port is not a valid port number: the port should be port > 0 and port < 65535');
   }
 
-  return port;
+  return portNum;
 }
 
 export function getPort(): number {
@@ -29,7 +26,16 @@ export function getPort(): number {
   }
 
   if (inx !== null) {
-    port = validateServerPort(process.argv[inx]);
+    try {
+      port = validateServerPort(process.argv[inx] as string);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error(error.message);
+      } else {
+        console.error(error);
+      }
+      process.exit(1);
+    }
   }
   
   return port;

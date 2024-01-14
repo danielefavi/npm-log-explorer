@@ -24,14 +24,21 @@ app
     console.log(`Server started at ` + url);
 
     // opening the browser
-    var start = (process.platform == 'darwin' ? 'open': process.platform == 'win32'? 'start': 'xdg-open');
+    var start = (process.platform == 'darwin' ? 'open': process.platform == 'win32' ? 'start': 'xdg-open');
     child_process.exec(start + ' ' + url);  
   })
-  .on('error', (err: any) => {
-    if (err.code === 'EADDRINUSE') {
-      console.log(`Port ${port} is busy, please try another port using --port option`);
+  .on('error', (err: Error & { code?: string }) => {
+    if (
+      err instanceof Object &&
+      err.hasOwnProperty('code') &&
+      typeof err.code === 'string' &&
+      err.code === 'EADDRINUSE'
+    ) {
+      console.error(`Port ${port} is busy, please try another port using --port option`);
+      process.exit(1);
     } else {
-      console.log(err);
+      console.error(err);
     }
+
     process.exit(1);
   });

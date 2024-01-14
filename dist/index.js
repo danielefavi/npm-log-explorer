@@ -25,11 +25,15 @@ app
     child_process_1.default.exec(start + ' ' + url);
 })
     .on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
-        console.log(`Port ${port} is busy, please try another port using --port option`);
+    if (err instanceof Object &&
+        err.hasOwnProperty('code') &&
+        typeof err.code === 'string' &&
+        err.code === 'EADDRINUSE') {
+        console.error(`Port ${port} is busy, please try another port using --port option`);
+        process.exit(1);
     }
     else {
-        console.log(err);
+        console.error(err);
     }
     process.exit(1);
 });

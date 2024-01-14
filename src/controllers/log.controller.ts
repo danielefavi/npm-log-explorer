@@ -85,67 +85,6 @@ export default class LogController {
     }
   }
 
-  static async searchLogsMMM(req: Request, res: Response) {
-    const queryParams = req.query;
-  
-    const query = queryParams.query as string;
-  
-    let page = parseInt(queryParams.page as string);
-    if (isNaN(page) || page < 1) {
-      page = 1;
-    }
-  
-    let itemsPerPage = parseInt(queryParams.items_per_page as string);
-    if (isNaN(itemsPerPage) || itemsPerPage < 1) {
-      itemsPerPage = 10;
-    }
-  
-    const entries: LogEntry[] = [];
-    let fileCount = 0;
-  
-    const files = LogController.getInstance().getFileList();
-    
-    for (const file of files) {
-      fileCount++;
-      if (fileCount <= (page - 1) * itemsPerPage) {
-        continue;
-      }
-      if (fileCount > page * itemsPerPage) {
-        break;
-      }
-  
-      try {
-        const data = await readLastLines.read(file, 1000);
-
-        const lines = data.split('\n');
-        const logParser = LogController.getInstance().logParser;
-  
-        for (const line of lines) {
-          if (line.trim() === '') {
-            continue;
-          }
-          if (line.includes(query)) {
-            const parsedEntry = logParser.parse(line);
-            if (parsedEntry) {
-              parsedEntry.fileName = file;
-              entries.push(parsedEntry);
-            }
-          }
-        }
-  
-        if (entries.length > itemsPerPage) {
-          entries.splice(itemsPerPage);
-        }
-  
-        res.json(entries);
-      } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: 'Error reading file' });
-      }
-
-    }
-  }
-  
   public static searchLogs(req: Request, res: Response) {
     const queryParams = req.query;
   
